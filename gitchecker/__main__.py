@@ -58,13 +58,14 @@ def recurse_directory(root_directory: Path) -> Optional[list[Path]]:
 
 
 def check_git_status_directory(place: Path):
-    output = subprocess.run('git -c color.status=always status', shell=True, capture_output=True, text=True, cwd=place)
-    if output.returncode != 0:
-        return
-    if 'nothing to commit, working tree clean' not in output.stdout or any(
-            [s in output.stdout for s in ('branch is ahead', 'branch is behind')]):
-        print(Style.BRIGHT + str(place) + Style.RESET_ALL)
-        print(output.stdout)
+    if place.is_dir():
+        output = subprocess.run('git -c color.status=always status', shell=True, capture_output=True, text=True, cwd=place)
+        if output.returncode != 0:
+            return
+        if 'nothing to commit, working tree clean' not in output.stdout or any(
+                [s in output.stdout for s in ('branch is ahead', 'branch is behind')]):
+            print(Style.BRIGHT + str(place) + Style.RESET_ALL)
+            print(output.stdout)
 
 
 def entry():
