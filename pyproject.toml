@@ -1,0 +1,26 @@
+[tool.black]
+line-length = 120
+
+[tool.flake8]
+exclude = ["scripts/tests"]
+max-line-length = 120
+show-source = true
+statistics = true
+
+[tool.isort]
+profile = "black"
+py_version = 39
+multi_line_output = 3
+line_length = 120
+indent = 4
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+markers = [
+    "slow: test is slow to run",
+]
+
+[tool.ruff]
+line-length = 120
+show-source = true
+target-version = "py311"
