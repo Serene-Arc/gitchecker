@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 from queue import Queue
-from typing import Optional
 
 from colorama import Style
 
@@ -58,7 +57,8 @@ def main(args: argparse.Namespace):
             "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=git_dir
         )
         if git_not_finalised(output):
-            print_full_git_information(output, git_dir)
+            print(Style.BRIGHT + str(git_dir) + Style.RESET_ALL)
+            print(output.stdout)
 
 
 def recurse_directory(root_directory: Path) -> list[Path]:
@@ -77,11 +77,6 @@ def git_not_finalised(output: subprocess.CompletedProcess[str]) -> bool:
         [s in output.stdout for s in ("branch is ahead", "branch is behind")]
     ):
         return True
-
-
-def print_full_git_information(output: subprocess.CompletedProcess[str], place: Path):
-    print(Style.BRIGHT + str(place) + Style.RESET_ALL)
-    print(output.stdout)
 
 
 def entry():
