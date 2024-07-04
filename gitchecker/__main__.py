@@ -31,6 +31,7 @@ def _add_arguments():
     parser.add_argument("-v", "--verbosity", action="count", default=0)
     parser.add_argument("directories", nargs="+")
     parser.add_argument("-r", "--recursive", action="store_true")
+    parser.add_argument("-q", "--quiet", action="store_true")
 
 
 def main(args: argparse.Namespace):
@@ -51,14 +52,17 @@ def main(args: argparse.Namespace):
         else:
             git_directories.append(place)
 
-    git_directories = [g for g in git_directories if g.is_dir()]
+    git_directories = [g.expanduser().resolve() for g in git_directories if g.is_dir()]
     for git_dir in git_directories:
         output = subprocess.run(
             "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=git_dir
         )
         if git_not_finalised(output):
-            print(Style.BRIGHT + str(git_dir) + Style.RESET_ALL)
-            print(output.stdout)
+            if args.quiet:
+                print(git_dir)
+            else:
+                print(Style.BRIGHT + str(git_dir) + Style.RESET_ALL)
+                print(output.stdout)
 
 
 def recurse_directory(root_directory: Path) -> list[Path]:

@@ -21,3 +21,5 @@ a single folder, as required.
    - Multiple directories can be specified
 - `-r, --recursive`
    - Turns on recursive mode
+- `-q, --quiet`
+   - Print the path of any unfinalised projects, rather than the git output
