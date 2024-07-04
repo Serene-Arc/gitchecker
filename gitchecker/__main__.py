@@ -37,29 +37,34 @@ def _add_arguments():
 def main(args: argparse.Namespace):
     _setup_logging(args.verbosity)
     args.directories = [Path(d).expanduser().resolve() for d in args.directories]
+    git_directories = []
     for place in args.directories:
         if args.recursive:
             master_queue = Queue()
             master_queue.put(place)
             while not master_queue.empty():
                 if rs := recurse_directory(master_queue.get()):
-                    [master_queue.put(r) for r in rs]
+                    for subdir in rs:
+                        if Path(subdir, ".git/").exists():
+                            git_directories.append(subdir)
+                        else:
+                            master_queue.put(subdir)
         else:
-            output = subprocess.run(
-                "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=place
-            )
-            if git_not_finalised(output, place):
-                print_full_git_information(output, place)
+            git_directories.append(place)
+
+    git_directories = [g for g in git_directories if g.is_dir()]
+    for git_dir in git_directories:
+        output = subprocess.run(
+            "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=git_dir
+        )
+        if git_not_finalised(output, git_dir):
+            print_full_git_information(output, git_dir)
 
 
-def recurse_directory(root_directory: Path) -> Optional[list[Path]]:
+def recurse_directory(root_directory: Path) -> list[Path]:
     check_dir = Path(root_directory, ".git/")
     if check_dir.exists():
-        output = subprocess.run(
-            "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=root_directory
-        )
-        if git_not_finalised(output, root_directory):
-            print_full_git_information(output, root_directory)
+        return [check_dir]
     else:
         subdirectories = filter(lambda d: d.is_dir(), root_directory.iterdir())
         return list(subdirectories)
