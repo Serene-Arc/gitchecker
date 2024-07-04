@@ -38,19 +38,19 @@ def main(args: argparse.Namespace):
     _setup_logging(args.verbosity)
     args.directories = [Path(d).expanduser().resolve() for d in args.directories]
     git_directories = []
-    for place in args.directories:
-        if args.recursive:
-            master_queue = Queue()
+    if args.recursive:
+        master_queue = Queue()
+        for place in args.directories:
             master_queue.put(place)
-            while not master_queue.empty():
-                if rs := recurse_directory(master_queue.get()):
-                    for subdir in rs:
-                        if Path(subdir, ".git/").exists():
-                            git_directories.append(subdir)
-                        else:
-                            master_queue.put(subdir)
-        else:
-            git_directories.append(place)
+        while not master_queue.empty():
+            if rs := recurse_directory(master_queue.get()):
+                for subdir in rs:
+                    if Path(subdir, ".git/").exists():
+                        git_directories.append(subdir)
+                    else:
+                        master_queue.put(subdir)
+    else:
+        git_directories = args.directories
 
     git_directories = [g.expanduser().resolve() for g in git_directories if g.is_dir()]
     for git_dir in git_directories:
