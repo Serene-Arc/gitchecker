@@ -57,7 +57,7 @@ def main(args: argparse.Namespace):
         output = subprocess.run(
             "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=git_dir
         )
-        if git_not_finalised(output, git_dir):
+        if git_not_finalised(output):
             print_full_git_information(output, git_dir)
 
 
@@ -70,14 +70,13 @@ def recurse_directory(root_directory: Path) -> list[Path]:
         return list(subdirectories)
 
 
-def git_not_finalised(output: subprocess.CompletedProcess[str], place: Path) -> bool:
-    if place.is_dir():
-        if output.returncode != 0:
-            return False
-        if "nothing to commit, working tree clean" not in output.stdout or any(
-            [s in output.stdout for s in ("branch is ahead", "branch is behind")]
-        ):
-            return True
+def git_not_finalised(output: subprocess.CompletedProcess[str]) -> bool:
+    if output.returncode != 0:
+        return False
+    if "nothing to commit, working tree clean" not in output.stdout or any(
+        [s in output.stdout for s in ("branch is ahead", "branch is behind")]
+    ):
+        return True
 
 
 def print_full_git_information(output: subprocess.CompletedProcess[str], place: Path):
