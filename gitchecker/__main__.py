@@ -45,23 +45,26 @@ def main(args: argparse.Namespace):
                 if rs := recurse_directory(master_queue.get()):
                     [master_queue.put(r) for r in rs]
         else:
-            check_git_status_directory(place)
+            output = subprocess.run(
+                "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=place
+            )
+            check_git_status_directory(output, place)
 
 
 def recurse_directory(root_directory: Path) -> Optional[list[Path]]:
     check_dir = Path(root_directory, ".git/")
     if check_dir.exists():
-        check_git_status_directory(root_directory)
+        output = subprocess.run(
+            "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=root_directory
+        )
+        check_git_status_directory(output, root_directory)
     else:
         subdirectories = filter(lambda d: d.is_dir(), root_directory.iterdir())
         return list(subdirectories)
 
 
-def check_git_status_directory(place: Path):
+def check_git_status_directory(output: subprocess.CompletedProcess[str], place: Path):
     if place.is_dir():
-        output = subprocess.run(
-            "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=place
-        )
         if output.returncode != 0:
             return
         if "nothing to commit, working tree clean" not in output.stdout or any(
