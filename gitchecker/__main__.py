@@ -18,7 +18,7 @@ logger = logging.getLogger()
 def _setup_logging(verbosity: int):
     logger.setLevel(1)
     stream = logging.StreamHandler(sys.stderr)
-    formatter = logging.Formatter('[%(asctime)s - %(name)s - %(levelname)s] - %(message)s')
+    formatter = logging.Formatter("[%(asctime)s - %(name)s - %(levelname)s] - %(message)s")
     stream.setFormatter(formatter)
     logger.addHandler(stream)
 
@@ -29,9 +29,9 @@ def _setup_logging(verbosity: int):
 
 
 def _add_arguments():
-    parser.add_argument('-v', '--verbosity', action='count', default=0)
-    parser.add_argument('directories', nargs='+')
-    parser.add_argument('-r', '--recursive', action='store_true')
+    parser.add_argument("-v", "--verbosity", action="count", default=0)
+    parser.add_argument("directories", nargs="+")
+    parser.add_argument("-r", "--recursive", action="store_true")
 
 
 def main(args: argparse.Namespace):
@@ -49,7 +49,7 @@ def main(args: argparse.Namespace):
 
 
 def recurse_directory(root_directory: Path) -> Optional[list[Path]]:
-    check_dir = Path(root_directory, '.git/')
+    check_dir = Path(root_directory, ".git/")
     if check_dir.exists():
         check_git_status_directory(root_directory)
     else:
@@ -59,11 +59,14 @@ def recurse_directory(root_directory: Path) -> Optional[list[Path]]:
 
 def check_git_status_directory(place: Path):
     if place.is_dir():
-        output = subprocess.run('git -c color.status=always status', shell=True, capture_output=True, text=True, cwd=place)
+        output = subprocess.run(
+            "git -c color.status=always status", shell=True, capture_output=True, text=True, cwd=place
+        )
         if output.returncode != 0:
             return
-        if 'nothing to commit, working tree clean' not in output.stdout or any(
-                [s in output.stdout for s in ('branch is ahead', 'branch is behind')]):
+        if "nothing to commit, working tree clean" not in output.stdout or any(
+            [s in output.stdout for s in ("branch is ahead", "branch is behind")]
+        ):
             print(Style.BRIGHT + str(place) + Style.RESET_ALL)
             print(output.stdout)
 
@@ -74,5 +77,5 @@ def entry():
     main(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     entry()
